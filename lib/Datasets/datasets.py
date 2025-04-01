@@ -1,8 +1,10 @@
 import torch
+import numpy as np
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-
+from torch.utils.data import TensorDataset, DataLoader
+from sklearn.model_selection import train_test_split
 
 class MNIST:
     """
@@ -594,6 +596,76 @@ class CIFAR100:
             num_workers=workers, pin_memory=is_gpu)
 
         test_loader = torch.utils.data.DataLoader(
+            self.testset,
+            batch_size=batch_size, shuffle=False,
+            num_workers=workers, pin_memory=is_gpu)
+
+        return train_loader, val_loader, test_loader
+
+class MI:
+    def __init__(self, is_gpu, args):
+        self.num_classes = 2
+        
+        # Load the training data to determine input dimensions
+        X_train_full = np.load("MI_data/x_train_multi.npy")[0]
+        y_train_full = np.load("MI_data/y_train_multi.npy")[0]
+
+        self.X_test_data = np.load("MI_data/x_test_multi.npy")[0]
+        self.y_test_data = np.load("MI_data/y_test_multi.npy")[0]
+
+        # Split into 90% train and 10% validation
+        self.X_train_data, self.X_val_data, self.y_train_data, self.y_val_data = train_test_split(
+            X_train_full, y_train_full, test_size=0.1, random_state=42, stratify=y_train_full
+        )
+                
+        self.trainset, self.valset, self.testset = self.get_dataset()
+        self.train_loader, self.val_loader, self.test_loader = self.get_dataset_loader(args.batch_size, args.workers, is_gpu)
+        
+        # Define the class dictionary
+        self.class_to_idx = {'0': 0, '1': 1}
+
+    def get_dataset(self):
+        """
+        Creates datasets from the loaded training and test .npy files.
+        
+        Returns:
+            torch.utils.data.TensorDataset: trainset, valset, testset
+        """
+        train_data_tensor = torch.from_numpy(self.X_train_data).float()
+        val_data_tensor = torch.from_numpy(self.X_val_data).float()
+        test_data_tensor = torch.from_numpy(self.X_test_data).float()
+        
+        train_labels_tensor = torch.from_numpy(self.y_train_data).long()
+        val_labels_tensor = torch.from_numpy(self.y_val_data).long()
+        test_labels_tensor = torch.from_numpy(self.y_test_data).long()
+    
+        trainset = TensorDataset(train_data_tensor, train_labels_tensor)
+        valset = TensorDataset(val_data_tensor, val_labels_tensor)
+        testset = TensorDataset(test_data_tensor, test_labels_tensor)
+        
+        return trainset, valset, testset
+
+    def get_dataset_loader(self, batch_size, workers, is_gpu):
+        """
+        Defines the dataset loader for wrapped dataset
+        Parameters:
+            batch_size (int): Defines the batch size in data loader
+            workers (int): Number of parallel threads to be used by data loader
+            is_gpu (bool): True if CUDA is enabled so pin_memory is set to True
+        Returns:
+             torch.utils.data.DataLoader: train_loader, val_loader, test_loader
+        """
+        train_loader = DataLoader(
+            self.trainset,
+            batch_size=batch_size, shuffle=True,
+            num_workers=workers, pin_memory=is_gpu, sampler=None)
+
+        val_loader = DataLoader(
+            self.valset,
+            batch_size=batch_size, shuffle=False,
+            num_workers=workers, pin_memory=is_gpu)
+
+        test_loader = DataLoader(
             self.testset,
             batch_size=batch_size, shuffle=False,
             num_workers=workers, pin_memory=is_gpu)
