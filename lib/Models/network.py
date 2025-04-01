@@ -18,17 +18,17 @@ class WRNBasicBlock(nn.Module):
 
         self.batchnorm = batchnorm
 
-        self.layer1 = nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(in_planes, eps=batchnorm)
+        self.layer1 = nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm1d(in_planes, eps=batchnorm)
         self.relu1 = nn.ReLU(inplace=True)
 
-        self.conv2 = nn.Conv2d(out_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_planes, eps=batchnorm)
+        self.conv2 = nn.Conv1d(out_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm1d(out_planes, eps=batchnorm)
         self.relu2 = nn.ReLU(inplace=True)
 
         self.useShortcut = ((in_planes == out_planes) and (stride == 1))
         if not self.useShortcut:
-            self.shortcut = nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, padding=0, bias=False)
+            self.shortcut = nn.Conv1d(in_planes, out_planes, kernel_size=1, stride=stride, padding=0, bias=False)
         else:
             self.shortcut = None
 
@@ -73,13 +73,14 @@ class Net(nn.Module):
 
     def __init__(self, state_list, num_classes, net_input, bn_val, do_drop):
         super(Net, self).__init__()
+        print(net_input.shape)
         batch_size = net_input.size(0)
         num_colors = net_input.size(1)
         image_size = net_input.size(2)
 
         # class attribute for storing total gpu memory requirement of the model
         # (4 bytes/ 32 bits per floating point no.)
-        self.gpu_mem_req = 32 * batch_size * num_colors * image_size * image_size
+        self.gpu_mem_req = 32 * batch_size * num_colors * image_size
 
         # lists for appending layer definitions
         feature_extractor_list = []
@@ -87,7 +88,8 @@ class Net(nn.Module):
 
         wrn_no = conv_no = fc_no = relu_no = bn_no = pool_no = 0
         out_channel = num_colors
-        no_feature = num_colors * (image_size ** 2)
+
+        no_feature = num_colors * image_size
 
         # for pretty-printing
         print('*' * 80)
@@ -101,7 +103,7 @@ class Net(nn.Module):
                 wrn_no += 1
                 in_channel = out_channel
                 out_channel = state.filter_depth
-                no_feature = (state.image_size ** 2) * out_channel
+                no_feature = state.image_size * out_channel
 
                 feature_extractor_list.append(('wrn_' + str(wrn_no), WRNBasicBlock(in_channel, out_channel,
                                                                                    stride=state.stride,
@@ -113,17 +115,17 @@ class Net(nn.Module):
                                           int(in_channel != out_channel) * in_channel * out_channel)
 
                 # gpu memory requirement for wrn block due to layer feature output
-                self.gpu_mem_req += 32 * batch_size * state.image_size * state.image_size * state.filter_depth\
+                self.gpu_mem_req += 32 * batch_size * state.image_size * state.filter_depth\
                                     * (2 + int(in_channel != out_channel))
 
             elif state.layer_type == 'conv':
                 conv_no += 1
                 in_channel = out_channel
                 out_channel = state.filter_depth
-                no_feature = (state.image_size ** 2) * out_channel
+                no_feature = state.image_size * out_channel
 
                 # conv filters without padding
-                feature_extractor_list.append(('conv' + str(conv_no), nn.Conv2d(in_channel, out_channel,
+                feature_extractor_list.append(('conv' + str(conv_no), nn.Conv1d(in_channel, out_channel,
                                                                                     state.filter_size,
                                                                                     stride=state.stride,
                                                                                     padding=state.padding,
@@ -131,7 +133,7 @@ class Net(nn.Module):
 
                 if bn_val > 0.0:
                     bn_no += 1
-                    feature_extractor_list.append(('batchnorm' + str(bn_no), nn.BatchNorm2d(num_features=out_channel,
+                    feature_extractor_list.append(('batchnorm' + str(bn_no), nn.BatchNorm1d(num_features=out_channel,
                                                                                             eps=bn_val)))
                 relu_no += 1
                 feature_extractor_list.append(('relu' + str(relu_no), nn.ReLU(inplace=True)))
@@ -141,16 +143,16 @@ class Net(nn.Module):
                 self.gpu_mem_req += 32 * in_channel * out_channel * state.filter_size * state.filter_size
 
                 # gpu memory requirement for conv layer due to layer feature output
-                self.gpu_mem_req += 32 * batch_size * state.image_size * state.image_size * state.filter_depth
+                self.gpu_mem_req += 32 * batch_size * state.image_size  * state.filter_depth
 
             elif state.layer_type == 'max_pool':
                 pool_no += 1
                 in_channel = out_channel
                 out_channel = state.filter_depth
-                no_feature = (state.image_size ** 2) * out_channel
+                no_feature = state.image_size * out_channel
 
                 # pool without padding
-                feature_extractor_list.append(('max_pool' + str(pool_no), nn.MaxPool2d(state.filter_size,
+                feature_extractor_list.append(('max_pool' + str(pool_no), nn.MaxPool1d(state.filter_size,
                                                                                        stride=state.stride,
                                                                                        padding=0)))
 
@@ -159,7 +161,7 @@ class Net(nn.Module):
                 self.gpu_mem_req += 32 * in_channel * out_channel * state.filter_size * state.filter_size
 
                 # gpu memory requirement for conv layer due to layer feature output
-                self.gpu_mem_req += 32 * batch_size * state.image_size * state.image_size * state.filter_depth
+                self.gpu_mem_req += 32 * batch_size * state.image_size * state.filter_depth
 
             elif state.layer_type == 'fc':
                 # this code is not used by default, as the number of fully-connected layers is 0 per default!

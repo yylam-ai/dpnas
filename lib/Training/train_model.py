@@ -234,6 +234,10 @@ class Trainer:
 
         return True, acc_best_val, acc_val_all_epochs, acc_train_all_epochs, acc_test, train_flag
 
+    def npy_loader(self, path):
+        sample = torch.from_numpy(np.load(path))
+        return sample
+    
     # dataset_type is "train", "val" or "test"
     def preprocess_input(self, dataloader, model, device, dataset_type=None, save_path='./datasets',
                          store_embedding=False, args=None):
@@ -282,13 +286,9 @@ class Trainer:
 
                 del input_, fixed_output
 
-        def npy_loader(path):
-            sample = torch.from_numpy(np.load(path))
-            return sample
-
         # load the stored data
         dataset_fixed_layer_outputs = torchvision.datasets.DatasetFolder(
-            store_path, loader=npy_loader, extensions='.npy')
+            store_path, loader=self.npy_loader, extensions='.npy')
 
         return torch.utils.data.DataLoader(
                 dataset_fixed_layer_outputs,

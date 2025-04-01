@@ -609,8 +609,10 @@ class MI:
         # Load the training data to determine input dimensions
         X_train_full = np.load("MI_data/x_train_multi.npy")[0]
         y_train_full = np.load("MI_data/y_train_multi.npy")[0]
+        X_train_full = X_train_full.reshape(X_train_full.shape[0], 1, X_train_full.shape[1])
 
         self.X_test_data = np.load("MI_data/x_test_multi.npy")[0]
+        self.X_test_data = self.X_test_data.reshape(self.X_test_data.shape[0], 1, self.X_test_data.shape[1])
         self.y_test_data = np.load("MI_data/y_test_multi.npy")[0]
 
         # Split into 90% train and 10% validation
