@@ -124,17 +124,17 @@ class MNIST:
         train_loader = torch.utils.data.DataLoader(
             self.trainset,
             batch_size=batch_size, shuffle=True,
-            num_workers=workers, pin_memory=is_gpu, sampler=None)
+             pin_memory=is_gpu, sampler=None)
 
         val_loader = torch.utils.data.DataLoader(
             self.valset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         test_loader = torch.utils.data.DataLoader(
             self.testset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         return train_loader, val_loader, test_loader
 
@@ -253,17 +253,17 @@ class FashionMNIST:
         train_loader = torch.utils.data.DataLoader(
             self.trainset,
             batch_size=batch_size, shuffle=True,
-            num_workers=workers, pin_memory=is_gpu, sampler=None)
+             pin_memory=is_gpu, sampler=None)
 
         val_loader = torch.utils.data.DataLoader(
             self.valset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         test_loader = torch.utils.data.DataLoader(
             self.testset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         return train_loader, val_loader, test_loader
 
@@ -375,17 +375,17 @@ class CIFAR10:
         train_loader = torch.utils.data.DataLoader(
             self.trainset,
             batch_size=batch_size, shuffle=True,
-            num_workers=workers, pin_memory=is_gpu, sampler=None)
+             pin_memory=is_gpu, sampler=None)
 
         val_loader = torch.utils.data.DataLoader(
             self.valset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         test_loader = torch.utils.data.DataLoader(
             self.testset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         return train_loader, val_loader, test_loader
 
@@ -588,17 +588,17 @@ class CIFAR100:
         train_loader = torch.utils.data.DataLoader(
             self.trainset,
             batch_size=batch_size, shuffle=True,
-            num_workers=workers, pin_memory=is_gpu, sampler=None)
+             pin_memory=is_gpu, sampler=None)
 
         val_loader = torch.utils.data.DataLoader(
             self.valset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         test_loader = torch.utils.data.DataLoader(
             self.testset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         return train_loader, val_loader, test_loader
 
@@ -660,16 +660,16 @@ class MI:
         train_loader = DataLoader(
             self.trainset,
             batch_size=batch_size, shuffle=True,
-            num_workers=workers, pin_memory=is_gpu, sampler=None)
+             pin_memory=is_gpu, sampler=None)
 
         val_loader = DataLoader(
             self.valset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         test_loader = DataLoader(
             self.testset,
             batch_size=batch_size, shuffle=False,
-            num_workers=workers, pin_memory=is_gpu)
+             pin_memory=is_gpu)
 
         return train_loader, val_loader, test_loader

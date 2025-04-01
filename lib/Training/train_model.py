@@ -94,8 +94,6 @@ class Trainer:
         # builds the net from the state list
         model = Net(state_list, num_classes, net_input, args.batch_norm, args.drop_out_drop)
 
-        print(model)
-
         # sets cudnn benchmark flag
         cudnn.benchmark = True
 
